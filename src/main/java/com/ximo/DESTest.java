@@ -1,13 +1,15 @@
 package com.ximo;
 
+import org.apache.commons.codec.binary.Hex;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
+import java.security.Security;
+import java.util.Arrays;
 
 /**
  * DES算法
@@ -16,11 +18,14 @@ import java.security.spec.InvalidKeySpecException;
  */
 public class DESTest {
 
-    public static void main(String[] args) {
+    private static String src = "朱文赵";
 
+    public static void main(String[] args) {
+        jdkDES();
+        bcDES();
     }
 
-    public static void jdkDES(){
+    private static void jdkDES(){
         try {
             //生成key
             KeyGenerator keyGenerator = KeyGenerator.getInstance("DES");
@@ -36,11 +41,25 @@ public class DESTest {
             SecretKey convertSecretKey = factory.generateSecret(desKeySpec);
 
             //加密
-            Cipher cipher = Cipher.getInstance("")
+            Cipher cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, convertSecretKey);
+            byte[] result = cipher.doFinal(src.getBytes());
+            System.out.println(Hex.encodeHexString(result));
 
-        } catch (NoSuchAlgorithmException | InvalidKeyException | InvalidKeySpecException e) {
+            //解密
+            cipher.init(Cipher.DECRYPT_MODE, convertSecretKey);
+            result = cipher.doFinal(result);
+            //输出解密结果
+            System.out.println(new String(result));
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static void bcDES(){
+        Security.addProvider(new BouncyCastleProvider());
+        jdkDES();
     }
 
 }
